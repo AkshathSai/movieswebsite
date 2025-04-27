@@ -576,12 +576,147 @@
                 font-size: 1.5rem;
             }
         }
+
+        /* Media Player Styles */
+        .hero-media-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .player-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .audio-player-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(20px);
+        }
+
+        .audio-player-wrapper {
+            position: relative;
+            z-index: 3;
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-thumbnail {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-info {
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .btn-player-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 10;
+            font-size: 1.5rem;
+        }
+
+        /* Local media cards */
+        .local-media-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .local-media-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Dark mode adjustments */
+        [data-bs-theme="dark"] .audio-player-wrapper {
+            background-color: rgba(50, 50, 50, 0.8);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .audio-thumbnail {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .audio-player-wrapper {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .audio-thumbnail {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .audio-player-wrapper {
+                padding: 1rem;
+            }
+            
+            .hero-section {
+                height: 400px;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <!-- Add this right after the opening <body> tag -->
-    <div class="htmx-progress-bar" id="htmx-progress-bar"></div>
 
     <!-- HTML Changes - Remove the existing navbar and add the sidebar -->
     <!-- Add this sidebar code at the beginning of the body -->
@@ -1334,20 +1469,52 @@
         </div>
     </template>
 
-    <!-- Hero Section with Featured Movie -->
-    <section class="hero-section" style="background-image: url('https://images.unsplash.com/photo-1598899134739-24c46f58b8c0');">
-        <div class="hero-overlay">
+    <!-- Hero Section with Media Player Support -->
+    <section class="hero-section position-relative" id="heroSection">
+        <!-- Background image/player container -->
+        <div class="hero-media-container" id="heroMediaContainer">
+            <!-- Default background image -->
+            <div class="hero-background" style="background-image: url('https://images.unsplash.com/photo-1598899134739-24c46f58b8c0');"></div>
+            
+            <!-- Video player (initially hidden) -->
+            <div class="player-container d-none" id="videoPlayerContainer">
+                <video id="videoPlayer" class="video-player" controls preload="metadata">
+                    <source src="" type="video/mp4" id="videoSource">
+                    Your browser does not support the video tag.
+                </video>
+                <button class="btn-close btn-close-white btn-player-close" id="closeVideoPlayer"></button>
+            </div>
+            
+            <!-- Audio player (initially hidden) -->
+            <div class="audio-player-container d-none" id="audioPlayerContainer">
+                <div class="audio-player-wrapper">
+                    <img id="audioThumbnail" src="/api/placeholder/500/500" alt="Album Art" class="audio-thumbnail">
+                    <div class="audio-info">
+                        <h4 id="audioTitle" class="mb-2">Track Title</h4>
+                        <p id="audioArtist" class="mb-3">Artist Name</p>
+                        <audio id="audioPlayer" class="audio-player w-100" controls preload="metadata">
+                            <source src="" type="audio/mpeg" id="audioSource">
+                            Your browser does not support the audio tag.
+                        </audio>
+                    </div>
+                    <button class="btn-close btn-close-white btn-player-close" id="closeAudioPlayer"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero content overlay -->
+        <div class="hero-overlay" id="heroOverlay">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-6 col-md-8">
-                        <h1 class="display-4 text-white fw-bold">Watch Free Movies Online</h1>
-                        <p class="lead text-white">Stream and download thousands of movies and TV shows without registration.</p>
+                        <h1 class="display-4 text-white fw-bold">Your Media Collection</h1>
+                        <p class="lead text-white">Stream your favorite local movies, music, and more in one place.</p>
                         <div class="d-flex gap-2 mt-4">
                             <button class="btn btn-primary btn-lg">
-                                <i class="bi bi-play-fill"></i> Watch Now
+                                <i class="bi bi-play-fill"></i> Browse Media
                             </button>
                             <button class="btn btn-outline-light btn-lg">
-                                <i class="bi bi-download"></i> Download
+                                <i class="bi bi-info-circle"></i> Learn More
                             </button>
                         </div>
                     </div>
@@ -1380,7 +1547,7 @@
         <section class="mb-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="fs-4 fs-md-3">Trending Now</h2>
-                <a href="#" class="text-decoration-none">View All</a>
+                <a href="viewAll.html" class="text-decoration-none">View All</a>
             </div>
             <div class="scroll-container d-flex gap-3">
                 <!-- Movie Cards -->
@@ -1775,6 +1942,119 @@
                                 </a>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Local Media Section -->
+        <section id="localMediaSection" class="container mt-5">
+            <!-- Media Type Tabs -->
+            <ul class="nav nav-tabs mb-4" id="mediaTypeTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="movies-tab" data-bs-toggle="tab" data-bs-target="#movies" type="button" role="tab">
+                        <i class="bi bi-film me-2"></i>Movies
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music" type="button" role="tab">
+                        <i class="bi bi-music-note-beamed me-2"></i>Music
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tv-tab" data-bs-toggle="tab" data-bs-target="#tv" type="button" role="tab">
+                        <i class="bi bi-tv me-2"></i>TV Shows
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab Contents -->
+            <div class="tab-content" id="mediaTypeContent">
+                <!-- Movies Tab -->
+                <div class="tab-pane fade show active" id="movies" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 col-6 mb-4">
+                            <div class="local-media-card card h-100" data-media-type="video" data-media-src="/path/to/movie.mp4" data-media-title="Sample Movie" data-media-poster="/api/placeholder/300/450">
+                                <img src="/api/placeholder/300/450" class="card-img-top" alt="Movie Poster">
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">Sample Movie</h5>
+                                    <p class="card-text small text-muted">1h 45m • 2023</p>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <button class="btn btn-primary btn-sm play-media-btn">
+                                        <i class="bi bi-play-fill"></i> Play
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More movie items would be dynamically loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Music Tab -->
+                <div class="tab-pane fade" id="music" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 col-6 mb-4">
+                            <div class="local-media-card card h-100" data-media-type="audio" data-media-src="/path/to/song.mp3" data-media-title="Sample Song" data-media-artist="Artist Name" data-media-thumbnail="/api/placeholder/500/500">
+                                <img src="/api/placeholder/500/500" class="card-img-top" alt="Album Art">
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">Sample Song</h5>
+                                    <p class="card-text small text-muted">Artist Name • Album Name</p>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <button class="btn btn-primary btn-sm play-media-btn">
+                                        <i class="bi bi-play-fill"></i> Play
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-music-note-list"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More music items would be dynamically loaded here -->
+                    </div>
+                </div>
+                
+                <!-- TV Shows Tab -->
+                <div class="tab-pane fade" id="tv" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 col-6 mb-4">
+                            <div class="local-media-card card h-100">
+                                <img src="/api/placeholder/300/450" class="card-img-top" alt="TV Show Poster">
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate">Sample TV Show</h5>
+                                    <p class="card-text small text-muted">3 Seasons • 24 Episodes</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <button class="btn btn-primary btn-sm w-100" data-bs-toggle="collapse" data-bs-target="#show1Episodes">
+                                        <i class="bi bi-list"></i> Episodes
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Collapsible episodes list -->
+                            <div class="collapse mt-2" id="show1Episodes">
+                                <div class="card">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>S01E01: Pilot</span>
+                                            <button class="btn btn-sm btn-primary play-media-btn" data-media-type="video" data-media-src="/path/to/episode.mp4" data-media-title="TV Show - S01E01">
+                                                <i class="bi bi-play-fill"></i>
+                                            </button>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <span>S01E02: Episode 2</span>
+                                            <button class="btn btn-sm btn-primary play-media-btn" data-media-type="video" data-media-src="/path/to/episode2.mp4" data-media-title="TV Show - S01E02">
+                                                <i class="bi bi-play-fill"></i>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More TV show items would be dynamically loaded here -->
                     </div>
                 </div>
             </div>
@@ -2440,6 +2720,339 @@
             }
         });
 
+        // Local Media Player Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const heroSection = document.getElementById('heroSection');
+            const heroBackground = document.querySelector('.hero-background');
+            const heroOverlay = document.getElementById('heroOverlay');
+            const videoPlayerContainer = document.getElementById('videoPlayerContainer');
+            const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const videoSource = document.getElementById('videoSource');
+            const audioSource = document.getElementById('audioSource');
+            const audioTitle = document.getElementById('audioTitle');
+            const audioArtist = document.getElementById('audioArtist');
+            const audioThumbnail = document.getElementById('audioThumbnail');
+            const closeVideoBtn = document.getElementById('closeVideoPlayer');
+            const closeAudioBtn = document.getElementById('closeAudioPlayer');
+            
+            // Play media buttons
+            const playButtons = document.querySelectorAll('.play-media-btn');
+            
+            // Add event listeners to play buttons
+            playButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Get media data from button's parent card
+                    const mediaCard = this.closest('.local-media-card');
+                    const mediaType = mediaCard.dataset.mediaType;
+                    const mediaSrc = "/Users/akshathsaipittala/Movies/Spy (2015) [BluRay] [1080p] [YTS.AM]/Spy.2015.1080p.BluRay.x264-[YTS.AM].mp4";
+                    const mediaTitle = mediaCard.dataset.mediaTitle;
+                    
+                    if (mediaType === 'video') {
+                        playVideo(mediaSrc, mediaTitle);
+                    } else if (mediaType === 'audio') {
+                        const mediaArtist = mediaCard.dataset.mediaArtist;
+                        const mediaThumbnail = mediaCard.dataset.mediaThumbnail;
+                        playAudio(mediaSrc, mediaTitle, mediaArtist, mediaThumbnail);
+                    }
+                });
+            });
+            
+            // Close buttons
+            closeVideoBtn.addEventListener('click', stopVideo);
+            closeAudioBtn.addEventListener('click', stopAudio);
+            
+            // Play video function
+            function playVideo(src, title) {
+                // Set video source
+                videoSource.src = src;
+                videoPlayer.load();
+                
+                // Show video player
+                heroBackground.style.opacity = '0';
+                videoPlayerContainer.classList.remove('d-none');
+                heroOverlay.style.opacity = '0';
+                
+                // Scroll to player with smooth animation
+                scrollToPlayer();
+                
+                // Start playing
+                videoPlayer.play()
+                    .catch(error => {
+                        console.error('Error playing video:', error);
+                        showToast('Error', 'Unable to play video. Please try again.', 'danger');
+                    });
+                    
+                // Add state to browser history for back button handling
+                history.pushState({player: 'video'}, '', window.location.href);
+                
+                // Listen for video end
+                videoPlayer.onended = function() {
+                    stopVideo();
+                };
+            }
+            
+            // Stop video function
+            function stopVideo() {
+                videoPlayer.pause();
+                videoSource.src = '';
+                videoPlayer.load();
+                
+                // Hide video player
+                videoPlayerContainer.classList.add('d-none');
+                heroBackground.style.opacity = '1';
+                heroOverlay.style.opacity = '1';
+            }
+            
+            // Play audio function
+            function playAudio(src, title, artist, thumbnail) {
+                // Set audio source and metadata
+                audioSource.src = src;
+                audioTitle.textContent = title;
+                audioArtist.textContent = artist;
+                audioThumbnail.src = thumbnail;
+                audioPlayer.load();
+                
+                // Show audio player
+                heroBackground.style.opacity = '0.3';
+                audioPlayerContainer.classList.remove('d-none');
+                heroOverlay.style.opacity = '0';
+                
+                // Scroll to player with smooth animation
+                scrollToPlayer();
+                
+                // Set background with blur effect
+                audioPlayerContainer.style.backgroundImage = `url(${thumbnail})`;
+                
+                // Start playing
+                audioPlayer.play()
+                    .catch(error => {
+                        console.error('Error playing audio:', error);
+                        showToast('Error', 'Unable to play audio. Please try again.', 'danger');
+                    });
+                    
+                // Add state to browser history for back button handling
+                history.pushState({player: 'audio'}, '', window.location.href);
+                
+                // Listen for audio end
+                audioPlayer.onended = function() {
+                    stopAudio();
+                };
+            }
+            
+            // Stop audio function
+            function stopAudio() {
+                audioPlayer.pause();
+                audioSource.src = '';
+                audioPlayer.load();
+                
+                // Hide audio player
+                audioPlayerContainer.classList.add('d-none');
+                heroBackground.style.opacity = '1';
+                heroOverlay.style.opacity = '1';
+            }
+            
+            // Function to smoothly scroll to the player
+            function scrollToPlayer() {
+                // Get the hero section element
+                const heroSection = document.getElementById('heroSection');
+                
+                // Calculate offset for fixed header if any
+                const sidebarHeight = document.querySelector('.netflix-sidebar') ? 
+                    document.querySelector('.netflix-sidebar').offsetHeight : 0;
+                    
+                // Get any additional offset needed (for mobile devices or other elements)
+                const offset = window.innerWidth < 768 ? 60 : 0;
+                
+                // Scroll to the element with smooth behavior
+                window.scrollTo({
+                    top: heroSection.offsetTop - offset,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Handle back button
+            window.addEventListener('popstate', function(event) {
+                if (event.state && event.state.player) {
+                    if (event.state.player === 'video') {
+                        stopVideo();
+                    } else if (event.state.player === 'audio') {
+                        stopAudio();
+                    }
+                }
+            });
+            
+            // API integration to fetch local media
+            function fetchLocalMedia() {
+                // Fetch movies
+                fetch('/api/local-media/movies')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderMediaItems(data, 'movies');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching local movies:', error);
+                    });
+                    
+                // Fetch music
+                fetch('/api/local-media/music')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderMediaItems(data, 'music');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching local music:', error);
+                    });
+                    
+                // Fetch TV shows
+                fetch('/api/local-media/tv')
+                    .then(response => response.json())
+                    .then(data => {
+                        renderMediaItems(data, 'tv');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching local TV shows:', error);
+                    });
+            }
+            
+            // Render media items from API response
+            function renderMediaItems(data, mediaType) {
+                const container = document.getElementById(mediaType).querySelector('.row');
+                
+                // Clear loading placeholder if any
+                container.innerHTML = '';
+                
+                // Check if we have data
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-inbox fs-1 text-muted"></i>
+                            <p class="mt-2 text-muted">No ${mediaType} found in your local library.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Generate HTML for each item
+                data.forEach(item => {
+                    if (mediaType === 'movies') {
+                        container.appendChild(createMovieCard(item));
+                    } else if (mediaType === 'music') {
+                        container.appendChild(createMusicCard(item));
+                    } else if (mediaType === 'tv') {
+                        container.appendChild(createTVShowCard(item));
+                    }
+                });
+            }
+            
+            // Create movie card element
+            function createMovieCard(movie) {
+                const col = document.createElement('div');
+                col.className = 'col-lg-3 col-md-4 col-6 mb-4';
+                
+                col.innerHTML = `
+                    <div class="local-media-card card h-100" data-media-type="video" 
+                         data-media-src="${movie.filePath}" 
+                         data-media-title="${movie.title}" 
+                         data-media-poster="${movie.poster || '/api/placeholder/300/450'}">
+                        <img src="${movie.poster || '/api/placeholder/300/450'}" class="card-img-top" alt="${movie.title}">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate">${movie.title}</h5>
+                            <p class="card-text small text-muted">${movie.duration || ''} ${movie.year ? '• ' + movie.year : ''}</p>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between bg-transparent">
+                            <button class="btn btn-primary btn-sm play-media-btn">
+                                <i class="bi bi-play-fill"></i> Play
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener to the newly created play button
+                const playBtn = col.querySelector('.play-media-btn');
+                playBtn.addEventListener('click', function() {
+                    const card = this.closest('.local-media-card');
+                    playVideo(card.dataset.mediaSrc, card.dataset.mediaTitle);
+                });
+                
+                return col;
+            }
+            
+            // Call API to fetch local media (comment out for placeholder demo)
+            // fetchLocalMedia();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global toast notification function - moved outside specific event handlers
+            window.showToast = function(title, message, type = 'primary') {
+                const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+                const toastId = 'toast-' + Date.now();
+                
+                const toastHtml = `
+                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
+                        <div class="toast-header bg-${type} text-white">
+                            <strong class="me-auto">${title}</strong>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 5000 });
+                toast.show();
+                
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    this.remove();
+                });
+            };
+
+            // Helper function for toast container
+            function createToastContainer() {
+                const container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                container.style.zIndex = '1050';
+                document.body.appendChild(container);
+                return container;
+            }
+            
+            // The rest of your initialization code
+
+            // Get the Browse Media button from hero section
+    const browseMediaBtn = document.querySelector('.hero-overlay .btn-primary');
+    
+    // Add click event listener to the button
+    if (browseMediaBtn) {
+        browseMediaBtn.addEventListener('click', function() {
+            // Get the local media section
+            const localMediaSection = document.getElementById('localMediaSection');
+            
+            // Calculate offset for fixed header if any
+            const sidebarHeight = document.querySelector('.netflix-sidebar') ? 
+                document.querySelector('.netflix-sidebar').offsetHeight : 0;
+                
+            // Additional offset for mobile devices
+            const offset = window.innerWidth < 768 ? 60 : 20;
+            
+            // Scroll to the section with smooth behavior
+            if (localMediaSection) {
+                window.scrollTo({
+                    top: localMediaSection.offsetTop - offset,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    }
+        });
     </script>
     <!-- Add these right before closing </body> tag -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>

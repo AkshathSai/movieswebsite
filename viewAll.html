@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All Movies - MovieStream</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        /* Inherit main styles from the parent page */
+        :root {
+            --movie-card-height: 350px;
+            --movie-card-mobile-height: 180px;
+        }
+
+        /* Grid view card styles */
+        .grid-movie-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .grid-movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1;
+        }
+        
+        .movie-poster {
+            height: 300px;
+            object-fit: cover;
+        }
+        
+        .grid-movie-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8) 50%);
+            padding: 20px;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        /* Filter sidebar */
+        .filters-sidebar {
+            position: sticky;
+            top: 20px;
+        }
+        
+        /* View toggle buttons */
+        .view-toggle .btn.active {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+        
+        /* Pagination custom styles */
+        .pagination .page-item.active .page-link {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+        
+        .pagination .page-link {
+            color: var(--bs-primary);
+        }
+        
+        /* Dark mode adjustments */
+        [data-bs-theme="dark"] .card {
+            background-color: #2c3034;
+        }
+        
+        [data-bs-theme="dark"] .list-group-item {
+            background-color: #2c3034;
+            border-color: #495057;
+        }
+        
+        [data-bs-theme="dark"] .pagination .page-link {
+            background-color: #212529;
+            border-color: #495057;
+        }
+        
+        [data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
+            background-color: #343a40;
+            border-color: #495057;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .filters-sidebar {
+                position: static;
+                margin-bottom: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .movie-poster {
+                height: 200px;
+            }
+            
+            .filters-offcanvas {
+                width: 280px;
+            }
+        }
+
+        /* List view styles */
+        .list-movie-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .list-movie-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .list-poster {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        @media (max-width: 576px) {
+            .list-poster {
+                width: 80px;
+                height: 120px;
+            }
+        }
+
+        /* Loading skeleton styles */
+        .skeleton-loader {
+            position: relative;
+            overflow: hidden;
+            background-color: #e9ecef;
+        }
+        
+        .skeleton-loader::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.5) 60%, rgba(255,255,255,0));
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
+        
+        [data-bs-theme="dark"] .skeleton-loader {
+            background-color: #343a40;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Back Button (Only visible on mobile) -->
+    <button class="btn btn-outline-primary position-fixed d-md-none" style="top: 10px; left: 10px; z-index: 1030;" onclick="history.back()">
+        <i class="bi bi-arrow-left"></i>
+    </button>
+
+    <!-- Main Container -->
+    <div class="container mt-4 pt-3">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mt-3 mb-0">
+                        <li class="breadcrumb-item"><a href="movie-netflix.html">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><span id="categoryTitle">Action Movies</span></li>
+                    </ol>
+                </nav>
+                <h1 class="h2 mt-2"><span id="categoryHeading">Action Movies</span> <span class="badge bg-secondary" id="totalResults">245</span></h1>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" class="btn btn-outline-secondary">
+                    <i class="bi bi-moon-fill"></i>
+                </button>
+                
+                <!-- Mobile Filter Toggle Button -->
+                <button class="btn btn-outline-primary d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#filtersOffcanvas">
+                    <i class="bi bi-sliders"></i> Filters
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content Row -->
+        <div class="row">
+            <!-- Filters Sidebar - Desktop -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="filters-sidebar">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Filters</h5>
+                            <button class="btn btn-sm btn-outline-secondary">Reset</button>
+                        </div>
+                        <div class="card-body">
+                            <!-- Year Range Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Year</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <input type="number" class="form-control form-control-sm" placeholder="From" min="1900" max="2025">
+                                    <span>to</span>
+                                    <input type="number" class="form-control form-control-sm" placeholder="To" min="1900" max="2025">
+                                </div>
+                            </div>
+                            
+                            <!-- Rating Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Rating</label>
+                                <select class="form-select form-select-sm">
+                                    <option value="">Any rating</option>
+                                    <option value="9">9+ ⭐</option>
+                                    <option value="8">8+ ⭐</option>
+                                    <option value="7">7+ ⭐</option>
+                                    <option value="6">6+ ⭐</option>
+                                    <option value="5">5+ ⭐</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Genres Filter -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Genres</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="action" id="genreAction" checked>
+                                    <label class="form-check-label" for="genreAction">Action</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="adventure" id="genreAdventure">
+                                    <label class="form-check-label" for="genreAdventure">Adventure</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="comedy" id="genreComedy">
+                                    <label class="form-check-label" for="genreComedy">Comedy</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="drama" id="genreDrama">
+                                    <label class="form-check-label" for="genreDrama">Drama</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="horror" id="genreHorror">
+                                    <label class="form-check-label" for="genreHorror">Horror</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="scifi" id="genreSciFi">
+                                    <label class="form-check-label" for="genreSciFi">Sci-Fi</label>
+                                </div>
+                                <button class="btn btn-link btn-sm ps-0">Show more</button>
+                            </div>
+                            
+                            <!-- Apply Filters Button -->
+                            <button class="btn btn-primary w-100">Apply Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Filters Offcanvas -->
+            <div class="offcanvas offcanvas-start filters-offcanvas" tabindex="-1" id="filtersOffcanvas" aria-labelledby="filtersOffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="filtersOffcanvasLabel">Filters</h5>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <!-- Mobile filters - same as desktop -->
+                    <!-- Year Range Filter -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Year</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="number" class="form-control form-control-sm" placeholder="From" min="1900" max="2025">
+                            <span>to</span>
+                            <input type="number" class="form-control form-control-sm" placeholder="To" min="1900" max="2025">
+                        </div>
+                    </div>
+                    
+                    <!-- Rating Filter -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Rating</label>
+                        <select class="form-select form-select-sm">
+                            <option value="">Any rating</option>
+                            <option value="9">9+ ⭐</option>
+                            <option value="8">8+ ⭐</option>
+                            <option value="7">7+ ⭐</option>
+                            <option value="6">6+ ⭐</option>
+                            <option value="5">5+ ⭐</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Genres Filter -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Genres</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="action" id="mobileGenreAction" checked>
+                            <label class="form-check-label" for="mobileGenreAction">Action</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="adventure" id="mobileGenreAdventure">
+                            <label class="form-check-label" for="mobileGenreAdventure">Adventure</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="comedy" id="mobileGenreComedy">
+                            <label class="form-check-label" for="mobileGenreComedy">Comedy</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="drama" id="mobileGenreDrama">
+                            <label class="form-check-label" for="mobileGenreDrama">Drama</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="horror" id="mobileGenreHorror">
+                            <label class="form-check-label" for="mobileGenreHorror">Horror</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="scifi" id="mobileGenreSciFi">
+                            <label class="form-check-label" for="mobileGenreSciFi">Sci-Fi</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Apply Filters Button -->
+                    <button class="btn btn-primary w-100 mb-2" data-bs-dismiss="offcanvas">Apply Filters</button>
+                    <button class="btn btn-outline-secondary w-100">Reset</button>
+                </div>
+            </div>
+            
+            <!-- Movie Grid -->
+            <div class="col-lg-9">
+                <!-- Sorting and View Options -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="form-label mb-0">Sort by:</label>
+                        <select class="form-select form-select-sm" style="width: auto;">
+                            <option value="popularity">Popularity</option>
+                            <option value="rating">Rating</option>
+                            <option value="year">Release Year</option>
+                            <option value="title">Title</option>
+                        </select>
+                    </div>
+                    <div class="btn-group view-toggle" role="group">
+                        <button type="button" class="btn btn-outline-primary active" id="gridViewBtn">
+                            <i class="bi bi-grid-3x3"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" id="listViewBtn">
+                            <i class="bi bi-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Grid View (Default) -->
+                <div id="gridView" class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+                    <!-- Movie Card 1 -->
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Fast & Furious 10</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">8.2 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 2 -->
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">John Wick: Chapter 4</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">9.0 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 3 -->
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Mission Impossible: Dead Reckoning</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">8.7 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Card 4 -->
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">The Expendables 4</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.5 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- More Movie Cards -->
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">The Equalizer 3</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">8.4 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Extraction 2</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.9 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Transformers: Rise of the Beasts</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.3 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">The Flash</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">6.9 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Indiana Jones and the Dial of Destiny</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.1 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Dungeons & Dragons</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.8 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">Guardians of the Galaxy Vol. 3</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">8.6 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col">
+                        <div class="card grid-movie-card h-100">
+                            <img src="/api/placeholder/300/450" class="card-img-top movie-poster" alt="Movie Poster">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">The Covenant</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-warning text-dark">7.9 ★</span>
+                                    <span class="badge bg-secondary">2023</span>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between bg-transparent">
+                                <button class="btn btn-sm btn-primary">
+                                    <i class="bi bi-play-fill"></i> Watch
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- List View (Initially Hidden) -->
+                <div id="listView" class="d-none mb-4">
+                    <!-- Movie Item 1 -->
+                    <div class="card mb-3 list-movie-card">
+                        <div class="row g-0">
+                            <div class="col-md-2 col-4">
+                                <img src="/api/placeholder/300/450" class="img-fluid rounded-start list-poster" alt="Movie Poster">
+                            </div>
+                            <div class="col-md-10 col-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title">Fast & Furious 10</h5>
+                                        <span class="badge bg-warning text-dark">8.2 ★</span>
+                                    </div>
+                                    <p class="card-text"><small class="text-muted">2023 • Action, Adventure, Crime</small></p>
+                                    <p class="card-text d-none d-md-block">The Fast family faces their most formidable foe yet in this epic conclusion to the franchise.</p>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill"></i> Watch
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary d-none d-md-inline-block">
+                                            <i class="bi bi-download"></i> Download
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Item 2 -->
+                    <div class="card mb-3 list-movie-card">
+                        <div class="row g-0">
+                            <div class="col-md-2 col-4">
+                                <img src="/api/placeholder/300/450" class="img-fluid rounded-start list-poster" alt="Movie Poster">
+                            </div>
+                            <div class="col-md-10 col-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title">John Wick: Chapter 4</h5>
+                                        <span class="badge bg-warning text-dark">9.0 ★</span>
+                                    </div>
+                                    <p class="card-text"><small class="text-muted">2023 • Action, Thriller, Crime</small></p>
+                                    <p class="card-text d-none d-md-block">John Wick uncovers a path to defeating The High Table, but before he can earn his freedom, he must face a new enemy.</p>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill"></i> Watch
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary d-none d-md-inline-block">
+                                            <i class="bi bi-download"></i> Download
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Item 3 -->
+                    <div class="card mb-3 list-movie-card">
+                        <div class="row g-0">
+                            <div class="col-md-2 col-4">
+                                <img src="/api/placeholder/300/450" class="img-fluid rounded-start list-poster" alt="Movie Poster">
+                            </div>
+                            <div class="col-md-10 col-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title">Mission Impossible: Dead Reckoning</h5>
+                                        <span class="badge bg-warning text-dark">8.7 ★</span>
+                                    </div>
+                                    <p class="card-text"><small class="text-muted">2023 • Action, Adventure, Thriller</small></p>
+                                    <p class="card-text d-none d-md-block">Ethan Hunt and his team must track down a terrifying new weapon that threatens all of humanity.</p>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill"></i> Watch
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary d-none d-md-inline-block">
+                                            <i class="bi bi-download"></i> Download
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Movie Item 4 -->
+                    <div class="card mb-3 list-movie-card">
+                        <div class="row g-0">
+                            <div class="col-md-2 col-4">
+                                <img src="/api/placeholder/300/450" class="img-fluid rounded-start list-poster" alt="Movie Poster">
+                            </div>
+                            <div class="col-md-10 col-8">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title">The Expendables 4</h5>
+                                        <span class="badge bg-warning text-dark">7.5 ★</span>
+                                    </div>
+                                    <p class="card-text"><small class="text-muted">2023 • Action, Adventure, Thriller</small></p>
+                                    <p class="card-text d-none d-md-block">A new generation of stars join the world's top action stars for an adrenaline-fueled adventure.</p>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-sm btn-primary">
+                                            <i class="bi bi-play-fill"></i> Watch
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-info-circle"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary d-none d-md-inline-block">
+                                            <i class="bi bi-download"></i> Download
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- More list items would follow the same pattern -->
+                </div>
+                
+                <!-- Empty State (When no results found) -->
+                <div id="emptyState" class="text-center py-5 d-none">
+                    <i class="bi bi-film fs-1 text-muted"></i>
+                    <h3 class="mt-3">No movies found</h3>
+                    <p class="text-muted">Try adjusting your filters or search criteria</p>
+                    <button class="btn btn-outline-primary mt-2">Reset Filters</button>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" class="d-none">
+                    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-4 g-3">
+                        <!-- Skeleton Loaders -->
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="skeleton-loader" style="height: 300px;"></div>
+                                <div class="card-body">
+                                    <div class="skeleton-loader mb-2" style="height: 24px;"></div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="skeleton-loader" style="height: 20px; width: 40px;"></div>
+                                        <div class="skeleton-loader" style="height: 20px; width: 50px;"></div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <div class="skeleton-loader" style="height: 31px; width: 80px;"></div>
+                                    <div class="skeleton-loader" style="height: 31px; width: 40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Repeat skeleton loaders -->
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="skeleton-loader" style="height: 300px;"></div>
+                                <div class="card-body">
+                                    <div class="skeleton-loader mb-2" style="height: 24px;"></div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="skeleton-loader" style="height: 20px; width: 40px;"></div>
+                                        <div class="skeleton-loader" style="height: 20px; width: 50px;"></div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <div class="skeleton-loader" style="height: 31px; width: 80px;"></div>
+                                    <div class="skeleton-loader" style="height: 31px; width: 40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="skeleton-loader" style="height: 300px;"></div>
+                                <div class="card-body">
+                                    <div class="skeleton-loader mb-2" style="height: 24px;"></div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="skeleton-loader" style="height: 20px; width: 40px;"></div>
+                                        <div class="skeleton-loader" style="height: 20px; width: 50px;"></div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <div class="skeleton-loader" style="height: 31px; width: 80px;"></div>
+                                    <div class="skeleton-loader" style="height: 31px; width: 40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="skeleton-loader" style="height: 300px;"></div>
+                                <div class="card-body">
+                                    <div class="skeleton-loader mb-2" style="height: 24px;"></div>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="skeleton-loader" style="height: 20px; width: 40px;"></div>
+                                        <div class="skeleton-loader" style="height: 20px; width: 50px;"></div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between bg-transparent">
+                                    <div class="skeleton-loader" style="height: 31px; width: 80px;"></div>
+                                    <div class="skeleton-loader" style="height: 31px; width: 40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <nav aria-label="Movie results pagination" class="my-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                        </li>
+                        <li class="page-item active" aria-current="page">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">...</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">20</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle functionality
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const htmlElement = document.documentElement;
+
+            // Check for saved theme preference or use preferred color scheme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                updateThemeIcon('dark');
+            }
+
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+            });
+
+            // Update button icon based on current theme
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                } else {
+                    themeToggleBtn.innerHTML = '<i class="bi bi-moon-fill"></i>';
+                }
+            }
+
+            // View toggle functionality
+            const gridViewBtn = document.getElementById('gridViewBtn');
+            const listViewBtn = document.getElementById('listViewBtn');
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+
+            gridViewBtn.addEventListener('click', function() {
+                gridView.classList.remove('d-none');
+                listView.classList.add('d-none');
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                localStorage.setItem('movieViewPreference', 'grid');
+            });
+
+            listViewBtn.addEventListener('click', function() {
+                listView.classList.remove('d-none');
+                gridView.classList.add('d-none');
+                listViewBtn.classList.add('active');
+                gridViewBtn.classList.remove('active');
+                localStorage.setItem('movieViewPreference', 'list');
+            });
+
+            // Load saved view preference
+            const viewPreference = localStorage.getItem('movieViewPreference');
+            if (viewPreference === 'list') {
+                listViewBtn.click();
+            }
+
+            // URL parameter handling
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            // Update page title based on category
+            if (category) {
+                document.getElementById('categoryTitle').textContent = category + ' Movies';
+                document.getElementById('categoryHeading').textContent = category + ' Movies';
+                document.title = category + ' Movies - MovieStream';
+            }
+
+            // Simulate loading state
+            function showLoadingState() {
+                document.getElementById('gridView').classList.add('d-none');
+                document.getElementById('listView').classList.add('d-none');
+                document.getElementById('emptyState').classList.add('d-none');
+                document.getElementById('loadingState').classList.remove('d-none');
+            }
+
+            function hideLoadingState() {
+                document.getElementById('loadingState').classList.add('d-none');
+                if (listViewBtn.classList.contains('active')) {
+                    document.getElementById('listView').classList.remove('d-none');
+                } else {
+                    document.getElementById('gridView').classList.remove('d-none');
+                }
+            }
+
+            // Pagination click handler with loading simulation
+            document.querySelectorAll('.pagination .page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active page
+                    document.querySelector('.page-item.active').classList.remove('active');
+                    this.parentElement.classList.add('active');
+                    
+                    // Show loading state
+                    showLoadingState();
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        hideLoadingState();
+                        // Scroll to top of results
+                        window.scrollTo({
+                            top: document.querySelector('.col-lg-9').offsetTop - 20,
+                            behavior: 'smooth'
+                        });
+                    }, 800);
+                });
+            });
+
+            // Filter application simulation
+            document.querySelector('.card-body .btn-primary').addEventListener('click', function() {
+                showLoadingState();
+                
+                // Simulate API call delay
+                setTimeout(() => {
+                    // 20% chance of showing empty state for demo
+                    if (Math.random() < 0.2) {
+                        document.getElementById('gridView').classList.add('d-none');
+                        document.getElementById('listView').classList.add('d-none');
+                        document.getElementById('loadingState').classList.add('d-none');
+                        document.getElementById('emptyState').classList.remove('d-none');
+                    } else {
+                        hideLoadingState();
+                    }
+                    
+                    // Update result count
+                    const randomCount = Math.floor(Math.random() * 100) + 10;
+                    document.getElementById('totalResults').textContent = randomCount;
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+
+</html>
