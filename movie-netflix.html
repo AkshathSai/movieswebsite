@@ -2188,33 +2188,58 @@
             const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
             const body = document.body;
             const sidebarLogoText = document.querySelector('.sidebar-logo-text');
-
-            function toggleSidebar() {
-                sidebar.classList.toggle('expanded');
-                body.classList.toggle('sidebar-expanded');
-                sidebarBackdrop.classList.toggle('show');
-
-                const isExpanded = sidebar.classList.contains('expanded');
-                sidebarToggle.innerHTML = isExpanded ?
-                    '<i class="bi bi-chevron-left"></i>' :
-                    '<i class="bi bi-chevron-right"></i>';
-
-                if (isExpanded) {
+            
+            // Functions to expand and collapse the sidebar
+            function expandSidebar() {
+                sidebar.classList.add('expanded');
+                body.classList.add('sidebar-expanded');
+                sidebarBackdrop.classList.add('show');
+                sidebarToggle.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                
+                if (sidebarLogoText.classList.contains('d-none')) {
                     sidebarLogoText.classList.remove('d-none');
                     setTimeout(() => {
                         sidebarLogoText.style.opacity = 1;
                     }, 100);
+                }
+            }
+            
+            function collapseSidebar() {
+                sidebar.classList.remove('expanded');
+                body.classList.remove('sidebar-expanded');
+                sidebarBackdrop.classList.remove('show');
+                sidebarToggle.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                
+                sidebarLogoText.style.opacity = 0;
+                setTimeout(() => {
+                    sidebarLogoText.classList.add('d-none');
+                }, 300);
+            }
+            
+            function toggleSidebar() {
+                if (sidebar.classList.contains('expanded')) {
+                    collapseSidebar();
                 } else {
-                    sidebarLogoText.style.opacity = 0;
-                    setTimeout(() => {
-                        sidebarLogoText.classList.add('d-none');
-                    }, 300);
+                    expandSidebar();
                 }
             }
 
             sidebarToggle.addEventListener('click', toggleSidebar);
             mobileSidebarToggle.addEventListener('click', toggleSidebar);
             sidebarBackdrop.addEventListener('click', toggleSidebar);
+            
+            // Add hover events for desktop - expand on hover, collapse on mouse leave
+            sidebar.addEventListener('mouseenter', function() {
+                if (window.innerWidth >= 768) { // Only apply on desktop
+                    expandSidebar();
+                }
+            });
+            
+            sidebar.addEventListener('mouseleave', function() {
+                if (window.innerWidth >= 768) { // Only apply on desktop
+                    collapseSidebar();
+                }
+            });
 
             // Close sidebar when clicking a link on mobile
             const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
