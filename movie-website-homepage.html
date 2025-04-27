@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieStream - Free Movies Online</title>
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --movie-card-height: 350px;
+        }
+        .movie-card {
+            transition: transform 0.3s;
+            height: var(--movie-card-height);
+            position: relative;
+            overflow: hidden;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+            z-index: 1;
+        }
+        .movie-poster {
+            height: var(--movie-card-height);
+            object-fit: cover;
+        }
+        .movie-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8) 50%);
+            padding: 20px;
+            color: white;
+            transition: all 0.3s;
+        }
+        .hero-section {
+            height: 500px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), transparent);
+            display: flex;
+            align-items: center;
+            padding-left: 5%;
+        }
+        .category-pill {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .category-pill:hover {
+            transform: scale(1.1);
+        }
+        /* Custom scrollbar for movie rows */
+        .scroll-container {
+            overflow-x: auto;
+            scrollbar-width: thin;
+            padding-bottom: 10px;
+        }
+        .scroll-container::-webkit-scrollbar {
+            height: 6px;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background-color: var(--bs-primary);
+            border-radius: 20px;
+        }
+        /* For dark mode */
+        [data-bs-theme="dark"] .navbar {
+            background-color: #1a1d20 !important;
+        }
+        [data-bs-theme="dark"] .bg-light {
+            background-color: #212529 !important;
+        }
+        [data-bs-theme="dark"] .text-dark {
+            color: #f8f9fa !important;
+        }
+        [data-bs-theme="dark"] .card {
+            background-color: #2c3034;
+        }
+        /* [data-bs-theme="dark"] body {
+            background-color: #000000;
+        } */
+        footer {
+            margin-top: 2rem;
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-film text-primary me-2"></i>
+                <span class="fw-bold">MovieStream</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Movies</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">TV Shows</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            Categories
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Action</a></li>
+                            <li><a class="dropdown-item" href="#">Comedy</a></li>
+                            <li><a class="dropdown-item" href="#">Drama</a></li>
+                            <li><a class="dropdown-item" href="#">Horror</a></li>
+                            <li><a class="dropdown-item" href="#">Sci-Fi</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">All Categories</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <form class="d-flex me-2">
+                        <div class="input-group">
+                            <input class="form-control" type="search" placeholder="Search movies...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <!-- Theme Toggle Button -->
+                    <button id="themeToggle" class="btn btn-outline-light ms-2">
+                        <i class="bi bi-moon-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Featured Movie -->
+    <section class="hero-section" style="background-image: url('/api/placeholder/1200/500');">
+        <div class="hero-overlay">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h1 class="display-4 text-white fw-bold">Watch Free Movies Online</h1>
+                        <p class="lead text-white">Stream and download thousands of movies and TV shows without registration.</p>
+                        <div class="d-flex gap-2 mt-4">
+                            <button class="btn btn-primary btn-lg">
+                                <i class="bi bi-play-fill"></i> Watch Now
+                            </button>
+                            <button class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mt-5">
+        <!-- Categories -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Categories</h2>
+                <a href="#" class="text-decoration-none">View All</a>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill bg-primary fs-6 px-3 py-2 category-pill">Action</span>
+                <span class="badge rounded-pill bg-success fs-6 px-3 py-2 category-pill">Comedy</span>
+                <span class="badge rounded-pill bg-danger fs-6 px-3 py-2 category-pill">Horror</span>
+                <span class="badge rounded-pill bg-warning text-dark fs-6 px-3 py-2 category-pill">Thriller</span>
+                <span class="badge rounded-pill bg-info text-dark fs-6 px-3 py-2 category-pill">Sci-Fi</span>
+                <span class="badge rounded-pill bg-secondary fs-6 px-3 py-2 category-pill">Drama</span>
+                <span class="badge rounded-pill bg-dark fs-6 px-3 py-2 category-pill">Documentary</span>
+                <span class="badge rounded-pill bg-primary fs-6 px-3 py-2 category-pill">Animation</span>
+            </div>
+        </section>
+
+        <!-- Trending Movies -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Trending Now</h2>
+                <a href="#" class="text-decoration-none">View All</a>
+            </div>
+            <div class="scroll-container d-flex gap-3">
+                <!-- Movie Cards -->
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Action Movie Title</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.2 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Sci-Fi Movie Title</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">7.5 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Drama Movie Title</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">9.0 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Comedy Movie Title</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.7 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Horror Movie Title</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">7.8 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Releases -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Latest Releases</h2>
+                <a href="#" class="text-decoration-none">View All</a>
+            </div>
+            <div class="scroll-container d-flex gap-3">
+                <!-- Movie Cards -->
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">New Release Movie</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.9 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">New Release Movie</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">7.2 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">New Release Movie</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.5 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">New Release Movie</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">9.1 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="Movie Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">New Release Movie</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">7.7 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular TV Shows -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Popular TV Shows</h2>
+                <a href="#" class="text-decoration-none">View All</a>
+            </div>
+            <div class="scroll-container d-flex gap-3">
+                <!-- TV Show Cards -->
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="TV Show Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Popular TV Show</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">9.2 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="TV Show Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Popular TV Show</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.8 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="TV Show Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Popular TV Show</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.3 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="TV Show Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Popular TV Show</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">7.9 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="movie-card rounded shadow">
+                    <img src="/api/placeholder/300/450" class="movie-poster rounded" alt="TV Show Poster">
+                    <div class="movie-overlay">
+                        <h5 class="card-title">Popular TV Show</h5>
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span class="badge bg-warning text-dark">8.6 ★</span>
+                                <span class="badge bg-secondary">2023</span>
+                            </div>
+                            <div>
+                                <a href="#" class="btn btn-sm btn-primary"><i class="bi bi-play-fill"></i></a>
+                                <a href="#" class="btn btn-sm btn-outline-light"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Subscription -->
+        <section class="py-5 px-3 bg-primary text-white rounded shadow-lg mb-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0">
+                    <h2>Stay Updated!</h2>
+                    <p class="lead">Subscribe to our newsletter for the latest movies and TV shows.</p>
+                </div>
+                <div class="col-lg-6">
+                    <form class="row g-3">
+                        <div class="col-md-8">
+                            <input type="email" class="form-control form-control-lg" placeholder="Your email address">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-light btn-lg w-100">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-3">MovieStream</h5>
+                    <p>Your go-to destination for free movies and TV shows online. Stream or download your favorite content without any registration.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="text-white"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-twitter fs-4"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-instagram fs-4"></i></a>
+                        <a href="#" class="text-white"><i class="bi bi-telegram fs-4"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5 class="mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Home</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Movies</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">TV Shows</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Top IMDB</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5 class="mb-3">Categories</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Action</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Comedy</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Horror</a></li>
+                        <li class="mb-2"><a href="#" class="text-white text-decoration-none">Drama</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="mb-3">Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-envelope me-2"></i> contact@moviestream.com</li>
+                        <li class="mb-2"><i class="bi bi-telephone me-2"></i> +1 (123) 456-7890</li>
+                        <li class="mb-2"><i class="bi bi-geo-alt me-2"></i> Los Angeles, CA, USA</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <p class="mb-0">&copy; 2025 MovieStream. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white text-decoration-none me-3">Privacy Policy</a>
+                    <a href="#" class="text-white text-decoration-none me-3">Terms of Service</a>
+                    <a href="#" class="text-white text-decoration-none">DMCA</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript for Theme Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use preferred color scheme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                updateThemeIcon('dark');
+            }
+            
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+            });
+            
+            // Update button icon based on current theme
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                    themeToggleBtn.classList.remove('btn-outline-dark');
+                    themeToggleBtn.classList.add('btn-outline-light');
+                } else {
+                    themeToggleBtn.innerHTML = '<i class="bi bi-moon-fill"></i>';
+                    themeToggleBtn.classList.remove('btn-outline-light');
+                    themeToggleBtn.classList.add('btn-outline-dark');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
