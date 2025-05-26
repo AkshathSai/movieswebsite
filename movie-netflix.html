@@ -344,6 +344,12 @@
             margin-top: auto;
             padding: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-footer .d-flex {
+            transition: all 0.3s ease;
+            width: 100%;
         }
 
         /* Search functionality styles */
@@ -352,12 +358,12 @@
             opacity: 0;
             height: 0;
             overflow: hidden;
+            margin-bottom: 1rem;
         }
 
         .netflix-sidebar.expanded .sidebar-search-form {
             opacity: 1;
             height: auto;
-            margin-bottom: 1rem;
         }
 
         .search-results-overlay {
@@ -721,6 +727,50 @@
         .hero-overlay[style*="opacity: 0"] {
             pointer-events: none !important;
         }
+
+        /* Add this CSS to make the theme toggle button responsive to sidebar expansion */
+        .sidebar-footer #themeToggle {
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .netflix-sidebar.expanded .sidebar-footer #themeToggle {
+            width: 100%;
+            min-width: auto;
+            justify-content: flex-start;
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+
+        .netflix-sidebar.expanded .sidebar-footer #themeToggle::after {
+            content: " Theme";
+            margin-left: 8px;
+            opacity: 1;
+            transition: opacity 0.3s ease 0.1s;
+        }
+
+        .sidebar-footer #themeToggle::after {
+            content: "";
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-search-form,
+        .sidebar-footer .d-flex {
+            margin-bottom: 1rem;
+        }
+
+        .netflix-sidebar.expanded .sidebar-search-form,
+        .netflix-sidebar.expanded .sidebar-footer .d-flex {
+            opacity: 1;
+            height: auto;
+        }
     </style>
 </head>
 
@@ -802,7 +852,7 @@
                 </div>
             </form>
             <div class="d-flex justify-content-center">
-                <button id="themeToggle" class="btn btn-outline-light btn-sm">
+                <button id="themeToggle" class="btn btn-outline-light btn-sm theme-toggle-btn">
                     <i class="bi bi-moon-fill"></i>
                 </button>
             </div>
@@ -3091,6 +3141,84 @@
             }
         });
     }
+        });
+
+        // Add this JavaScript to handle the sidebar expansion and theme toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.querySelector('.netflix-sidebar');
+            const themeToggle = document.getElementById('themeToggle');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+
+            // Function to toggle sidebar
+            function toggleSidebar() {
+                sidebar.classList.toggle('expanded');
+                
+                // Update theme button text based on current theme
+                updateThemeButtonText();
+            }
+
+            // Function to update theme button text
+            function updateThemeButtonText() {
+                const icon = themeToggle.querySelector('i');
+                const isExpanded = sidebar.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    // Add text content via data attribute for smoother animation
+                    if (icon.classList.contains('bi-moon-fill')) {
+                        themeToggle.setAttribute('data-text', 'Dark Mode');
+                    } else {
+                        themeToggle.setAttribute('data-text', 'Light Mode');
+                    }
+                } else {
+                    themeToggle.removeAttribute('data-text');
+                }
+            }
+
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function() {
+                const icon = this.querySelector('i');
+                const isCurrentlyDark = icon.classList.contains('bi-moon-fill');
+                
+                if (isCurrentlyDark) {
+                    icon.classList.remove('bi-moon-fill');
+                    icon.classList.add('bi-sun-fill');
+                    document.body.classList.add('light-theme');
+                } else {
+                    icon.classList.remove('bi-sun-fill');
+                    icon.classList.add('bi-moon-fill');
+                    document.body.classList.remove('light-theme');
+                }
+                
+                // Update button text if sidebar is expanded
+                updateThemeButtonText();
+            });
+
+            // Sidebar toggle events
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            if (mobileSidebarToggle) {
+                mobileSidebarToggle.addEventListener('click', toggleSidebar);
+            }
+
+            // Handle hover effects for desktop
+            if (window.innerWidth >= 768) {
+                sidebar.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('expanded')) {
+                        this.classList.add('hover-expanded');
+                        updateThemeButtonText();
+                    }
+                });
+
+                sidebar.addEventListener('mouseleave', function() {
+                    if (this.classList.contains('hover-expanded')) {
+                        this.classList.remove('hover-expanded');
+                        updateThemeButtonText();
+                    }
+                });
+            }
         });
     </script>
     <!-- Add these right before closing </body> tag -->
