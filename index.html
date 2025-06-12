@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal Movies & Music Player</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS for glassmorphism and theme -->
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.25);
+      --glass-border: rgba(255, 255, 255, 0.18);
+      --dark-glass-bg: rgba(30, 30, 30, 0.75);
+      --dark-glass-border: rgba(255, 255, 255, 0.1);
+      --text-light: #2c3e50;
+      --text-dark: #ffffff;
+      --text-muted-light: #6c757d;
+      --text-muted-dark: #e9ecef;
+    }
+    
+    body {
+      min-height: 100vh;
+      background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      transition: all 0.5s ease;
+      color: var(--text-light);
+    }
+    
+    .glass {
+      background: var(--glass-bg);
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    
+    body.dark-mode {
+      background: url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-dark);
+    }
+    
+    body.dark-mode .glass {
+      background: var(--dark-glass-bg);
+      border: 1px solid var(--dark-glass-border);
+    }
+    
+    body.dark-mode .text-muted {
+      color: var(--text-muted-dark) !important;
+    }
+    
+    body.dark-mode .navbar-brand,
+    body.dark-mode .card-title,
+    body.dark-mode .fw-medium,
+    body.dark-mode .media-title {
+      color: var(--text-dark) !important;
+    }
+    
+    .theme-toggle {
+      cursor: pointer;
+      border-radius: 50px;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+    
+    .file-input-label {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .file-input-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .media-card {
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+    
+    .media-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    
+    .media-thumbnail {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .media-thumbnail.video {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .media-thumbnail.audio {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .media-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    
+    .media-card:hover .media-thumbnail img {
+      transform: scale(1.1);
+    }
+    
+    .media-icon {
+      font-size: 4rem;
+      color: white;
+      opacity: 0.7;
+      position: absolute;
+      z-index: 1;
+    }
+    
+    .media-duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      z-index: 2;
+    }
+    
+    .media-content {
+      padding: 1.25rem;
+    }
+    
+    .media-type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: rgba(0, 123, 255, 0.1);
+      color: #007bff;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+    
+    .media-type-badge.audio {
+      background: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    body.dark-mode .media-type-badge {
+      background: rgba(0, 123, 255, 0.2);
+      color: #66b3ff;
+    }
+    
+    body.dark-mode .media-type-badge.audio {
+      background: rgba(40, 167, 69, 0.2);
+      color: #5cbf60;
+    }
+    
+    .navbar-brand {
+      font-size: 1.5rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .controls-section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(8px);
+    }
+    
+    body.dark-mode .controls-section {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .playlist-counter {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .media-player {
+      margin-top: 1rem;
+    }
+    
+    .media-player video,
+    .media-player audio {
+      width: 100%;
+      border-radius: 8px;
+    }
+    
+    .media-player video {
+      max-height: 180px;
+    }
+    
+    .media-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+      color: var(--text-light);
+    }
+    
+    body.dark-mode .media-title {
+      color: var(--text-dark) !important;
+    }
+    
+    .media-meta {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    /* Background Settings in Navbar */
+    .bg-dropdown {
+        min-width: 300px;
+        padding: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1050; /* Higher than default dropdown */
+    }
+
+    .bg-option {
+        width: 50px;
+        height: 35px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background-size: cover;
+        background-position: center;
+        border: 2px solid transparent;
+        margin: 2px;
+    }
+
+    .bg-option:hover {
+        transform: scale(1.1);
+        border: 2px solid #007bff;
+    }
+
+    .bg-option.active {
+        border: 2px solid #28a745;
+        transform: scale(1.05);
+    }
+
+    .bg-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.3rem;
+        margin-top: 0.5rem;
+    }
+
+    .navbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .navbar-divider {
+        height: 20px;
+        width: 1px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Fix dropdown overlap with main content */
+    .navbar {
+        z-index: 1030;
+    }
+
+    .dropdown-menu {
+        z-index: 1050;
+    }
+
+    /* Add some top margin to main content to prevent overlap */
+    .main-content {
+        margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg glass mt-3 mx-3 px-4">
+    <a class="navbar-brand fw-bold" href="#">
+      <i class="bi bi-collection-play"></i> MediaHub
+    </a>
+    
+    <div class="ms-auto navbar-controls">
+      <!-- Background Selector -->
+      <div class="dropdown">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-palette"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end bg-dropdown glass">
+          <h6 class="dropdown-header fw-medium">Choose Background</h6>
+          <div class="bg-grid" id="backgroundGrid">
+            <!-- Background options will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="navbar-divider"></div>
+      
+      <!-- Theme Toggle -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-medium small">Light</span>
+        <button class="btn btn-outline-light btn-sm theme-toggle px-3" id="themeToggle" aria-label="Toggle theme">
+          <i class="bi bi-moon-fill"></i>
+        </button>
+        <span class="fw-medium small">Dark</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-4 main-content">
+    <!-- Controls Section -->
+    <div class="controls-section">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="d-flex align-items-center gap-3">
+            <label class="btn btn-primary file-input-label mb-0 px-4">
+              <i class="bi bi-folder2-open"></i> Browse Files
+              <input type="file" id="fileInput" accept="audio/*,video/*" style="display:none" multiple>
+            </label>
+            <div class="playlist-counter" id="playlistCounter">
+              0 files loaded
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+          <div class="d-flex align-items-center justify-content-md-end gap-3">
+            <button class="btn btn-outline-secondary btn-sm" id="clearAll">
+              <i class="bi bi-trash"></i> Clear All
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="shufflePlay">
+              <i class="bi bi-shuffle"></i> Shuffle
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo Content -->
+    <div class="row" id="mediaGrid">
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card glass border-0 media-card h-100">
+          <div class="media-thumbnail video">
+            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&q=80" alt="Sample Movie">
+            <i class="bi bi-play-circle-fill media-icon"></i>
+            <div class="media-duration">
+              <i class="bi bi-play-circle"></i> 1:30
+            </div>
+          </div>
+          <div class="media-content">
+            <div class="media-type-badge">
+              <i class="bi bi-film"></i>
+              Video
+            </div>
+            <h5 class="media-title">Big Buck Bunny</h5>
+            <p class="media-meta text-muted">
+              A short computer-animated film by the Blender Institute
+            </p>
+            <div class="media-player">
+              <video controls>
+                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card glass border-0 media-card h-100">
+          <div class="media-thumbnail audio">
+            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=400&q=80" alt="Sample Music">
+            <i class="bi bi-music-note-beamed media-icon"></i>
+            <div class="media-duration">
+              <i class="bi bi-music-note"></i> 0:30
+            </div>
+          </div>
+          <div class="media-content">
+            <div class="media-type-badge audio">
+              <i class="bi bi-music-note-beamed"></i>
+              Audio
+            </div>
+            <h5 class="media-title">Sample Audio Track</h5>
+            <p class="media-meta text-muted">
+              A short audio sample for demonstration
+            </p>
+            <div class="media-player">
+              <audio controls>
+                <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3">
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Media Grid -->
+    <div class="row" id="userMediaGrid"></div>
+    
+    <!-- Empty State -->
+    <div class="text-center py-5" id="emptyState" style="display: none;">
+      <div class="glass p-5">
+        <i class="bi bi-music-note-list display-1 text-muted mb-3"></i>
+        <h3 class="text-muted">No media files loaded</h3>
+        <p class="text-muted">Click "Browse Files" to load your music and movie files</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script>
+    // Background options
+    const backgrounds = {
+      light: [
+        '/Users/akshathsaipittala/Code/movieswebsite/resources/vid7997.mpg', // Forest
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=80', // Mountain lake
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1920&q=80', // Field
+        'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=1920&q=80', // Lake
+        'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=1920&q=80', // Waterfall
+        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=1920&q=80', // Mountains
+        'https://images.unsplash.com/photo-1418489098061-ce87b5dc3aee?auto=format&fit=crop&w=1920&q=80', // Sunset beach
+        'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=1920&q=80', // Forest path
+      ],
+      dark: [
+        'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=1920&q=80', // Night sky
+        'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&w=1920&q=80', // Night mountains
+        'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=1920&q=80', // Night city
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1920&q=80', // Night forest
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1920&q=80', // Dark lake
+        'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&w=1920&q=80', // Dark ocean
+        'https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?auto=format&fit=crop&w=1920&q=80', // Northern lights
+        'https://images.unsplash.com/photo-1500622944204-b135684e99fd?auto=format&fit=crop&w=1920&q=80', // Night landscape
+      ]
+    };
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+    let currentTheme = 'light';
+    let currentBgIndex = 0;
+    
+    // Load saved theme and background
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedBgIndex = localStorage.getItem('bgIndex') || '0';
+    currentTheme = savedTheme;
+    currentBgIndex = parseInt(savedBgIndex);
+    
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+    }
+    
+    // Set initial background
+    setBackground(currentBgIndex);
+    
+    function setBackground(index) {
+      // Ensure index is within bounds
+      const maxIndex = backgrounds[currentTheme].length - 1;
+      index = Math.min(Math.max(0, index), maxIndex);
+      
+      const bgUrl = backgrounds[currentTheme][index];
+      body.style.backgroundImage = `url('${bgUrl}')`;
+      currentBgIndex = index;
+      localStorage.setItem('bgIndex', index.toString());
+      updateBackgroundGrid();
+    }
+    
+    function updateBackgroundGrid() {
+      const grid = document.getElementById('backgroundGrid');
+      grid.innerHTML = '';
+      
+      backgrounds[currentTheme].forEach((bg, index) => {
+        const option = document.createElement('div');
+        option.className = `bg-option ${index === currentBgIndex ? 'active' : ''}`;
+        option.style.backgroundImage = `url('${bg}')`;
+        option.title = `Background ${index + 1}`;
+        option.addEventListener('click', () => setBackground(index));
+        grid.appendChild(option);
+      });
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      const isDark = body.classList.contains('dark-mode');
+      currentTheme = isDark ? 'dark' : 'light';
+      themeToggle.innerHTML = isDark 
+        ? '<i class="bi bi-sun-fill"></i>' 
+        : '<i class="bi bi-moon-fill"></i>';
+      localStorage.setItem('theme', currentTheme);
+      
+      // Keep same background index when switching themes (if available)
+      const maxIndex = backgrounds[currentTheme].length - 1;
+      const newIndex = Math.min(currentBgIndex, maxIndex);
+      setBackground(newIndex);
+    });
+
+    // File handling
+    const fileInput = document.getElementById('fileInput');
+    const userMediaGrid = document.getElementById('userMediaGrid');
+    const playlistCounter = document.getElementById('playlistCounter');
+    const clearAllBtn = document.getElementById('clearAll');
+    const shuffleBtn = document.getElementById('shufflePlay');
+    const emptyState = document.getElementById('emptyState');
+    
+    let userFiles = [];
+
+    function updatePlaylistCounter() {
+      const count = userFiles.length;
+      playlistCounter.textContent = count === 0 ? '0 files loaded' : 
+        count === 1 ? '1 file loaded' : `${count} files loaded`;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function createMediaCard(file, url) {
+      const isVideo = file.type.startsWith('video');
+      const card = document.createElement('div');
+      card.className = 'col-lg-4 col-md-6 mb-4';
+      
+      card.innerHTML = `
+        <div class="card glass border-0 media-card h-100">
+          <div class="media-thumbnail ${isVideo ? 'video' : 'audio'}">
+            <i class="bi ${isVideo ? 'bi-play-circle-fill' : 'bi-music-note-beamed'} media-icon"></i>
+            <div class="media-duration">
+              <i class="bi ${isVideo ? 'bi-play-circle' : 'bi-music-note'}"></i>
+            </div>
+          </div>
+          <div class="media-content">
+            <div class="media-type-badge ${isVideo ? '' : 'audio'}">
+              <i class="bi ${isVideo ? 'bi-film' : 'bi-music-note-beamed'}"></i>
+              ${isVideo ? 'Video' : 'Audio'}
+            </div>
+            <h5 class="media-title" title="${file.name}">
+              ${file.name.length > 25 ? file.name.substring(0, 25) + '...' : file.name}
+            </h5>
+            <p class="media-meta text-muted">
+              Size: ${formatFileSize(file.size)}
+            </p>
+            <div class="media-player">
+              ${isVideo 
+                ? `<video controls>
+                     <source src="${url}" type="${file.type}">
+                     Your browser does not support the video tag.
+                   </video>`
+                : `<audio controls>
+                     <source src="${url}" type="${file.type}">
+                     Your browser does not support the audio element.
+                   </audio>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    fileInput.addEventListener('change', (event) => {
+      const files = Array.from(event.target.files);
+      
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        userFiles.push({ file, url });
+        const card = createMediaCard(file, url);
+        userMediaGrid.appendChild(card);
+      });
+      
+      updatePlaylistCounter();
+      emptyState.style.display = userFiles.length === 0 ? 'block' : 'none';
+    });
+
+    clearAllBtn.addEventListener('click', () => {
+      if (userFiles.length === 0) return;
+      
+      if (confirm('Are you sure you want to clear all loaded files?')) {
+        userFiles.forEach(({ url }) => URL.revokeObjectURL(url));
+        userFiles = [];
+        userMediaGrid.innerHTML = '';
+        updatePlaylistCounter();
+        emptyState.style.display = 'block';
+        fileInput.value = '';
+      }
+    });
+
+    shuffleBtn.addEventListener('click', () => {
+      if (userFiles.length === 0) return;
+      
+      // Shuffle the userFiles array
+      for (let i = userFiles.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [userFiles[i], userFiles[j]] = [userFiles[j], userFiles[i]];
+      }
+      
+      // Re-render the grid
+      userMediaGrid.innerHTML = '';
+      userFiles.forEach(({ file, url }) => {
+        const card = createMediaCard(file, url);
+        userMediaGrid.appendChild(card);
+      });
+    });
+
+    // Initialize
+    updatePlaylistCounter();
+    updateBackgroundGrid();
+  </script>
+</body>
+</html>
