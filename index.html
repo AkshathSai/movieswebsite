@@ -65,10 +65,22 @@
       cursor: pointer;
       border-radius: 50px;
       transition: all 0.3s ease;
+      color: #333 !important; /* Dark color for light mode */
+      border-color: #333 !important;
     }
     
     .theme-toggle:hover {
       transform: scale(1.05);
+    }
+    
+    /* Dark mode theme toggle styling */
+    body.dark-mode .theme-toggle {
+      color: #fff !important; /* White color for dark mode */
+      border-color: #fff !important;
+    }
+    
+    body.dark-mode .theme-toggle:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
     }
     
     .file-input-label {
@@ -90,61 +102,182 @@
       transform: translateY(-8px);
       box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
+        .media-thumbnail {
+          width: 100%;
+          height: 200px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 12px 12px 0 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+          cursor: pointer;
+        }
+        
+        .media-thumbnail.video {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .media-thumbnail.audio {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .media-thumbnail img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+        
+        .media-card:hover .media-thumbnail img {
+          transform: scale(1.1);
+        }
+        
+        .media-icon {
+          font-size: 4rem;
+          color: white;
+          opacity: 0.7;
+          position: absolute;
+          z-index: 1;
+          transition: all 0.3s ease;
+        }
+        
+        .media-thumbnail:hover .media-icon {
+          opacity: 1;
+          transform: scale(1.1);
+        }
+        
+        .media-duration {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          background: rgba(0, 0, 0, 0.7);
+          color: white;
+          padding: 0.25rem 0.5rem;
+          border-radius: 8px;
+          font-size: 0.75rem;
+          z-index: 2;
+        }
+        
+        .media-content {
+          padding: 1.25rem;
+        }
+        
+        /* Thumbnail Player - Replaces thumbnail when playing */
+        .thumbnail-player {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          z-index: 10;
+          display: none;
+          border-radius: 12px 12px 0 0;
+          overflow: hidden;
+        }
+        
+        .thumbnail-player.active {
+          display: block;
+        }
+        
+        .thumbnail-player video,
+        .thumbnail-player audio {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 12px 12px 0 0;
+        }
+        
+        .thumbnail-player audio {
+          height: 60px;
+          margin-top: 70px;
+          border-radius: 8px;
+          background: rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Hide thumbnail content when player is active */
+        .media-thumbnail.playing .media-icon,
+        .media-thumbnail.playing .play-overlay,
+        .media-thumbnail.playing img {
+          opacity: 0;
+          pointer-events: none;
+        }
+        
+        .play-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          z-index: 3;
+        }
     
-    .media-thumbnail {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: 12px 12px 0 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
+        .media-thumbnail:hover .play-overlay {
+          opacity: 1;
+        }
     
-    .media-thumbnail.video {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+        .play-btn {
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          color: #333;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
     
-    .media-thumbnail.audio {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    }
+        .play-btn:hover {
+          background: white;
+          transform: scale(1.1);
+        }
     
-    .media-thumbnail img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s ease;
-    }
+        .controls-bar {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
     
-    .media-card:hover .media-thumbnail img {
-      transform: scale(1.1);
-    }
+        .control-btn {
+          background: none;
+          border: none;
+          color: inherit;
+          font-size: 0.9rem;
+          padding: 0.25rem;
+          border-radius: 4px;
+          transition: all 0.3s ease;
+          cursor: pointer;
+        }
     
-    .media-icon {
-      font-size: 4rem;
-      color: white;
-      opacity: 0.7;
-      position: absolute;
-      z-index: 1;
-    }
+        .control-btn:hover {
+          background: rgba(0, 0, 0, 0.1);
+        }
     
-    .media-duration {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 0.25rem 0.5rem;
-      border-radius: 8px;
-      font-size: 0.75rem;
-      z-index: 2;
-    }
+        body.dark-mode .control-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
     
-    .media-content {
-      padding: 1.25rem;
-    }
+        .now-playing {
+          border: 2px solid #28a745;
+          box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        }
+    
+        /* Remove the old media-player styles since we're replacing with thumbnail-player */
+        .media-player {
+          display: none;
+        }
     
     .media-type-badge {
       display: inline-flex;
@@ -185,10 +318,6 @@
       padding: 1rem;
       margin-bottom: 2rem;
       backdrop-filter: blur(8px);
-    }
-    
-    body.dark-mode .controls-section {
-      background: rgba(0, 0, 0, 0.3);
     }
     
     .playlist-counter {
@@ -359,64 +488,306 @@
       </div>
     </div>
 
-    <!-- Demo Content -->
-    <div class="row" id="mediaGrid">
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card glass border-0 media-card h-100">
-          <div class="media-thumbnail video">
-            <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&q=80" alt="Sample Movie">
-            <i class="bi bi-play-circle-fill media-icon"></i>
-            <div class="media-duration">
-              <i class="bi bi-play-circle"></i> 1:30
+        <!-- Demo Content -->
+        <div class="row" id="mediaGrid">
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail video" onclick="togglePlay(this)">
+                <i class="bi bi-play-circle-fill media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-play-circle"></i> 1:30
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <video controls>
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge">
+                  <i class="bi bi-film"></i>
+                  Video
+                </div>
+                <h5 class="media-title">Big Buck Bunny</h5>
+                <p class="media-meta text-muted">
+                  A short computer-animated film by the Blender Institute
+                </p>
+              </div>
             </div>
           </div>
-          <div class="media-content">
-            <div class="media-type-badge">
-              <i class="bi bi-film"></i>
-              Video
-            </div>
-            <h5 class="media-title">Big Buck Bunny</h5>
-            <p class="media-meta text-muted">
-              A short computer-animated film by the Blender Institute
-            </p>
-            <div class="media-player">
-              <video controls>
-                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-              </video>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail audio" onclick="togglePlay(this)">
+                <i class="bi bi-music-note-beamed media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-music-note"></i> 0:30
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <audio controls>
+                    <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge audio">
+                  <i class="bi bi-music-note-beamed"></i>
+                  Audio
+                </div>
+                <h5 class="media-title">Sample Audio Track</h5>
+                <p class="media-meta text-muted">
+                  A short audio sample for demonstration
+                </p>
+              </div>
             </div>
           </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail video" onclick="togglePlay(this)">
+                <i class="bi bi-play-circle-fill media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-play-circle"></i> 2:15
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <video controls>
+                    <source src="https://www.w3schools.com/html/movie.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge">
+                  <i class="bi bi-film"></i>
+                  Video
+                </div>
+                <h5 class="media-title">Nature Documentary</h5>
+                <p class="media-meta text-muted">
+                  Beautiful wildlife footage from around the world
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail audio" onclick="togglePlay(this)">
+                <i class="bi bi-music-note-beamed media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-music-note"></i> 3:42
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <audio controls>
+                    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mp3">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge audio">
+                  <i class="bi bi-music-note-beamed"></i>
+                  Audio
+                </div>
+                <h5 class="media-title">Relaxing Piano</h5>
+                <p class="media-meta text-muted">
+                  Peaceful piano melody for relaxation
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail video" onclick="togglePlay(this)">
+                <i class="bi bi-play-circle-fill media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-play-circle"></i> 4:20
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <video controls>
+                    <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge">
+                  <i class="bi bi-film"></i>
+                  Video
+                </div>
+                <h5 class="media-title">Tech Tutorial</h5>
+                <p class="media-meta text-muted">
+                  Learn new programming techniques
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail audio" onclick="togglePlay(this)">
+                <i class="bi bi-music-note-beamed media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-music-note"></i> 2:58
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <audio controls>
+                    <source src="https://www.w3schools.com/html/horse.ogg" type="audio/ogg">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge audio">
+                  <i class="bi bi-music-note-beamed"></i>
+                  Audio
+                </div>
+                <h5 class="media-title">Jazz Ensemble</h5>
+                <p class="media-meta text-muted">
+                  Smooth jazz instrumental piece
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail video" onclick="togglePlay(this)">
+                <i class="bi bi-play-circle-fill media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-play-circle"></i> 1:45
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <video controls>
+                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge">
+                  <i class="bi bi-film"></i>
+                  Video
+                </div>
+                <h5 class="media-title">Cooking Show</h5>
+                <p class="media-meta text-muted">
+                  Learn to make delicious recipes
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail audio" onclick="togglePlay(this)">
+                <i class="bi bi-music-note-beamed media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-music-note"></i> 4:12
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <audio controls>
+                    <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge audio">
+                  <i class="bi bi-music-note-beamed"></i>
+                  Audio
+                </div>
+                <h5 class="media-title">Podcast Episode</h5>
+                <p class="media-meta text-muted">
+                  Technology news and discussions
+                </p>
+              </div>
+            </div>
+          </div>
+    
+          <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card glass border-0 media-card h-100">
+              <div class="media-thumbnail video" onclick="togglePlay(this)">
+                <i class="bi bi-play-circle-fill media-icon"></i>
+                <div class="play-overlay">
+                  <button class="play-btn">
+                    <i class="bi bi-play-fill"></i>
+                  </button>
+                </div>
+                <div class="media-duration">
+                  <i class="bi bi-play-circle"></i> 3:33
+                </div>
+                <!-- Thumbnail Player -->
+                <div class="thumbnail-player">
+                  <video controls>
+                    <source src="https://www.w3schools.com/html/movie.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              </div>
+              <div class="media-content">
+                <div class="media-type-badge">
+                  <i class="bi bi-film"></i>
+                  Video
+                </div>
+                <h5 class="media-title">Travel Vlog</h5>
+                <p class="media-meta text-muted">
+                  Exploring beautiful destinations
+                </p>
+              </div>
+            </div>
+          </div>
+          
         </div>
-      </div>
-
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card glass border-0 media-card h-100">
-          <div class="media-thumbnail audio">
-            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=400&q=80" alt="Sample Music">
-            <i class="bi bi-music-note-beamed media-icon"></i>
-            <div class="media-duration">
-              <i class="bi bi-music-note"></i> 0:30
-            </div>
-          </div>
-          <div class="media-content">
-            <div class="media-type-badge audio">
-              <i class="bi bi-music-note-beamed"></i>
-              Audio
-            </div>
-            <h5 class="media-title">Sample Audio Track</h5>
-            <p class="media-meta text-muted">
-              A short audio sample for demonstration
-            </p>
-            <div class="media-player">
-              <audio controls>
-                <source src="https://www.w3schools.com/html/horse.mp3" type="audio/mp3">
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- User Media Grid -->
     <div class="row" id="userMediaGrid"></div>
